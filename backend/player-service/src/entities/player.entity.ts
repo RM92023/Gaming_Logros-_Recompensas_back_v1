@@ -30,6 +30,12 @@ export class Player {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ name: 'is_premium', default: false })
+  isPremium: boolean;
+
+  @Column({ name: 'premium_purchased_at', type: 'timestamp', nullable: true })
+  premiumPurchasedAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 
