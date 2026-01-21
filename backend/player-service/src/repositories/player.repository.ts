@@ -23,6 +23,23 @@ export class PlayerRepository implements IPlayerRepository {
     return this.repository.save(player);
   }
 
+  async createWithPassword(username: string, email: string, hashedPassword: string): Promise<Player> {
+    const player = this.repository.create({ 
+      username, 
+      email, 
+      password: hashedPassword,
+      mustChangePassword: true 
+    });
+    return this.repository.save(player);
+  }
+
+  async updatePassword(playerId: string, hashedPassword: string, mustChangePassword: boolean): Promise<Player> {
+    const player = await this.getPlayerOrThrow(playerId);
+    player.password = hashedPassword;
+    player.mustChangePassword = mustChangePassword;
+    return this.repository.save(player);
+  }
+
   async findById(id: string): Promise<Player | null> {
     return this.repository.findOne({ where: { id } });
   }

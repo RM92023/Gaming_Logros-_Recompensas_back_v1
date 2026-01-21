@@ -1,6 +1,6 @@
 import { Controller, Post, Put, Get, Delete, Body, Param, ValidationPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { PlayerService } from '../services/player.service';
-import { CreatePlayerDto, UpdatePlayerDto, GameEventDto, PlayerResponseDto } from '../dtos/player.dto';
+import { CreatePlayerDto, UpdatePlayerDto, GameEventDto, PlayerResponseDto, LoginDto, ChangePasswordDto } from '../dtos/player.dto';
 import { Player } from '../entities/player.entity';
 
 /**
@@ -15,14 +15,38 @@ export class PlayerController {
 
   /**
    * PUT /players
-   * Registra un nuevo jugador
+   * Registra un nuevo jugador y envía contraseña temporal por correo
    */
   @Put()
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body(ValidationPipe) createPlayerDto: CreatePlayerDto,
-  ): Promise<Player> {
+  ): Promise<{ message: string; email: string }> {
     return this.playerService.registerPlayer(createPlayerDto);
+  }
+
+  /**
+   * POST /players/login
+   * Inicia sesión con correo y contraseña
+   */
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(
+    @Body(ValidationPipe) loginDto: LoginDto,
+  ): Promise<Player> {
+    return this.playerService.login(loginDto);
+  }
+
+  /**
+   * POST /players/change-password
+   * Cambia la contraseña del jugador
+   */
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(
+    @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
+  ): Promise<Player> {
+    return this.playerService.changePassword(changePasswordDto);
   }
 
   /**

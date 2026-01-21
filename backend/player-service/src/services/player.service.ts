@@ -1,8 +1,11 @@
-import { Injectable, Inject, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, ConflictException, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { IPlayerRepository } from '../interfaces/player-repository.interface';
 import { IEventPublisher } from '../interfaces/event-publisher.interface';
-import { CreatePlayerDto, UpdatePlayerDto, GameEventDto, GameEventType, PlayerResponseDto } from '../dtos/player.dto';
+import { CreatePlayerDto, UpdatePlayerDto, GameEventDto, GameEventType, PlayerResponseDto, LoginDto, ChangePasswordDto } from '../dtos/player.dto';
 import { Player } from '../entities/player.entity';
+import { EmailService } from './email.service';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 
 /**
  * Servicio de Jugador - Capa de Lógica de Negocio
@@ -18,13 +21,20 @@ export class PlayerService {
     private readonly playerRepository: IPlayerRepository,
     @Inject('IEventPublisher')
     private readonly eventPublisher: IEventPublisher,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
-   * Registra un nuevo jugador
-   * Valida la unicidad del nombre de usuario y correo electrónico
+   * Genera una contraseña temporal aleatoria
    */
-  async registerPlayer(createPlayerDto: CreatePlayerDto): Promise<Player> {
+  private generateTemporaryPassword(): string {
+    return crypto.randomBytes(4).toString('hex').toUpperCase(); // 8 caracteres
+  }
+
+  /**
+   * Registra un nuevo jugador con contraseña temporal
+   */
+  async registerPlayer(createPlayerDto: CreatePlayerDto): Promise<{ message: string; email: string }> {
     const { username, email } = createPlayerDto;
 
     // Verificar si el nombre de usuario ya existe
@@ -36,10 +46,63 @@ export class PlayerService {
     // Verificar si el correo electrónico ya existe
     const existingEmail = await this.playerRepository.findByEmail(email);
     if (existingEmail) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException('El correo electrónico ya está registrado');
     }
 
-    return this.playerRepository.create(username, email);
+    // Generar contraseña temporal
+    const temporaryPassword = this.generateTemporaryPassword();
+    
+    // Hashear contraseña
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+
+    // Crear jugador con contraseña hasheada
+    await this.playerRepository.createWithPassword(username, email, hashedPassword);
+
+    // Enviar correo con contraseña temporal
+    await this.emailService.sendTemporaryPassword(email, temporaryPassword, username);
+
+    return {
+      message: 'Registro exitoso. Revisa tu correo para obtener tu contraseña temporal.',
+      email
+    };
+  }
+
+  /**
+   * Login de jugador
+   */
+  async login(loginDto: LoginDto): Promise<Player> {
+    const { email, password } = loginDto;
+
+    const player = await this.playerRepository.findByEmail(email);
+    if (!player) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    // Verificar contraseña
+    const isPasswordValid = await bcrypt.compare(password, player.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    return player;
+  }
+
+  /**
+   * Cambiar contraseña
+   */
+  async changePassword(changePasswordDto: ChangePasswordDto): Promise<Player> {
+    const { playerId, newPassword } = changePasswordDto;
+
+    const player = await this.playerRepository.findById(playerId);
+    if (!player) {
+      throw new NotFoundException('Jugador no encontrado');
+    }
+
+    // Hashear nueva contraseña
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Actualizar contraseña y marcar como cambiada
+    return this.playerRepository.updatePassword(playerId, hashedPassword, false);
   }
 
   /**
