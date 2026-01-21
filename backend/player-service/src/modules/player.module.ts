@@ -6,6 +6,7 @@ import { PlayerController } from '../controllers/player.controller';
 import { PlayerService } from '../services/player.service';
 import { PlayerRepository } from '../repositories/player.repository';
 import { EventPublisher } from '../events/event.publisher';
+import { EmailService } from '../services/email.service';
 
 /**
  * Módulo de Jugador
@@ -21,6 +22,7 @@ import { EventPublisher } from '../events/event.publisher';
   controllers: [PlayerController],
   providers: [
     PlayerService,
+    EmailService,
     {
       provide: 'IPlayerRepository',
       useClass: PlayerRepository,

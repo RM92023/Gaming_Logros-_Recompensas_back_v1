@@ -15,6 +15,12 @@ export class Player {
   @Column({ unique: true, length: 100 })
   email: string;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  password: string;
+
+  @Column({ name: 'must_change_password', default: true })
+  mustChangePassword: boolean;
+
   @Column({ type: 'int', default: 0 })
   monstersKilled: number;
 

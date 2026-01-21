@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsNotEmpty, MinLength, MaxLength, IsInt, Min, IsEnum } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, MinLength, MaxLength, IsInt, Min, IsEnum, IsOptional } from 'class-validator';
 
 /**
  * DTOs for Player Service
@@ -16,6 +16,27 @@ export class CreatePlayerDto {
   @IsEmail()
   @MaxLength(100)
   email: string;
+}
+
+export class LoginDto {
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @IsString()
+  password: string;
+}
+
+export class ChangePasswordDto {
+  @IsNotEmpty()
+  @IsString()
+  playerId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(6)
+  newPassword: string;
 }
 
 export class UpdatePlayerDto {
@@ -36,6 +57,7 @@ export class PlayerResponseDto {
   monstersKilled: number;
   timePlayed: number;
   isActive: boolean;
+  mustChangePassword: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
