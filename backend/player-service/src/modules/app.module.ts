@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PlayerModule } from './player.module';
 import { Player } from '../entities/player.entity';
+import { PremiumPurchase } from '../entities/premium-purchase.entity';
 
 /**
  * Módulo de Aplicación - Módulo Raíz
@@ -25,7 +26,7 @@ import { Player } from '../entities/player.entity';
         username: configService.get<string>('DB_USER', 'player_user'),
         password: configService.get<string>('DB_PASSWORD', 'player_pass'),
         database: configService.get<string>('DB_NAME', 'player_db'),
-        entities: [Player],
+        entities: [Player, PremiumPurchase],
         synchronize: configService.get<boolean>('DB_SYNC', true), // Solo para desarrollo
         logging: configService.get<boolean>('DB_LOGGING', false),
       }),

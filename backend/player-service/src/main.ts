@@ -8,7 +8,9 @@ import { EventPublisher } from './events/event.publisher';
  * Principio SOLID S: Solo responsable de inicializar la aplicación
  */
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true, // Necesario para webhook de Stripe
+  });
   
   // Habilita la validación global
   app.useGlobalPipes(new ValidationPipe({
