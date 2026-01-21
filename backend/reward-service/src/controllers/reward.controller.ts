@@ -45,4 +45,17 @@ export class RewardController {
   async getPlayerBalance(@Param('playerId') playerId: string): Promise<PlayerBalance> {
     return this.rewardService.getPlayerBalance(playerId);
   }
+
+  @Post(':rewardId/claim')
+  async claimReward(@Param('rewardId') rewardId: string): Promise<Reward> {
+    console.log('[RewardController] Recibida petición de claim para rewardId:', rewardId);
+    try {
+      const result = await this.rewardService.claimReward(rewardId);
+      console.log('[RewardController] Recompensa reclamada exitosamente:', result.id);
+      return result;
+    } catch (error: any) {
+      console.error('[RewardController] Error al reclamar recompensa:', error?.message || String(error));
+      throw error;
+    }
+  }
 }

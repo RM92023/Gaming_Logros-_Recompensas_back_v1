@@ -97,4 +97,21 @@ export class RewardService {
   async getPlayerBalance(playerId: string): Promise<PlayerBalance> {
     return this.getOrCreateBalance(playerId);
   }
+
+  async claimReward(rewardId: string): Promise<Reward> {
+    const reward = await this.rewardRepository.findOne({
+      where: { id: rewardId },
+    });
+
+    if (!reward) {
+      throw new Error('Reward not found');
+    }
+
+    if (reward.isClaimed) {
+      throw new Error('Reward already claimed');
+    }
+
+    reward.isClaimed = true;
+    return this.rewardRepository.save(reward);
+  }
 }
