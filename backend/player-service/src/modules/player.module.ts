@@ -2,8 +2,11 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Player } from '../entities/player.entity';
+import { PremiumPurchase } from '../entities/premium-purchase.entity';
 import { PlayerController } from '../controllers/player.controller';
+import { PaymentController } from '../controllers/payment.controller';
 import { PlayerService } from '../services/player.service';
+import { PaymentService } from '../services/payment.service';
 import { PlayerRepository } from '../repositories/player.repository';
 import { EventPublisher } from '../events/event.publisher';
 import { EmailService } from '../services/email.service';
@@ -16,12 +19,13 @@ import { EmailService } from '../services/email.service';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Player]),
+    TypeOrmModule.forFeature([Player, PremiumPurchase]),
     ConfigModule,
   ],
-  controllers: [PlayerController],
+  controllers: [PlayerController, PaymentController],
   providers: [
     PlayerService,
+    PaymentService,
     EmailService,
     {
       provide: 'IPlayerRepository',
